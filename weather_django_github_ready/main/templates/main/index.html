@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #dbeafe, #eff6ff, #e0f2fe);
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        .container {
+            width: min(900px, 92%);
+            margin: 0 auto;
+            padding: 48px 0;
+        }
+        .hero {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .hero h1 { margin: 0 0 8px; font-size: 42px; }
+        .hero p { margin: 0; color: #64748b; }
+        .card {
+            background: rgba(255,255,255,.9);
+            border-radius: 22px;
+            padding: 28px;
+            margin-bottom: 22px;
+            box-shadow: 0 12px 35px rgba(30, 64, 175, .12);
+        }
+        form { display: flex; gap: 12px; }
+        input[type="text"] {
+            flex: 1;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 16px;
+            outline: none;
+        }
+        input[type="text"]:focus { border-color: #3b82f6; }
+        button {
+            border: 0;
+            border-radius: 12px;
+            padding: 14px 24px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover { background: #1d4ed8; }
+        .error {
+            margin-top: 18px;
+            padding: 12px 14px;
+            background: #fee2e2;
+            color: #991b1b;
+            border-radius: 10px;
+        }
+        .weather {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+            align-items: center;
+        }
+        .main-weather { text-align: center; }
+        .main-weather img { width: 110px; }
+        .temp { font-size: 50px; font-weight: 700; margin: 0; }
+        .city { font-size: 26px; font-weight: 700; }
+        .description { color: #64748b; }
+        .details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .detail {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 14px;
+            text-align: center;
+        }
+        .detail strong { display: block; font-size: 22px; margin-top: 6px; }
+        .recent li {
+            list-style: none;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .recent ul { padding: 0; margin: 0; }
+        .muted { color: #64748b; }
+        @media (max-width: 650px) {
+            form, .weather { display: block; }
+            button { width: 100%; margin-top: 10px; }
+            .details { margin-top: 22px; grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="hero">
+        <h1>🌤️ Weather App</h1>
+        <p>Search for a city and get live weather information.</p>
+    </div>
+
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="city" placeholder="Enter city name" required>
+            <button type="submit">Get Weather</button>
+        </form>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+    </div>
+
+    {% if weather %}
+    <div class="card weather">
+        <div class="main-weather">
+            <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png" alt="Weather icon">
+            <div class="city">{{ weather.city }}{% if weather.country %}, {{ weather.country }}{% endif %}</div>
+            <p class="temp">{{ weather.temperature|floatformat:1 }}°C</p>
+            <p class="description">{{ weather.description }}</p>
+        </div>
+        <div class="details">
+            <div class="detail">💧 Humidity<strong>{{ weather.humidity }}%</strong></div>
+            <div class="detail">🌡️ Pressure<strong>{{ weather.pressure }} hPa</strong></div>
+            <div class="detail">🌍 City<strong>{{ weather.city }}</strong></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card recent">
+        <h2>Recent Searches</h2>
+        {% if recent_searches %}
+            <ul>
+                {% for search in recent_searches %}
+                    <li>
+                        <strong>{{ search.city_name }}</strong> — {{ search.temperature|floatformat:1 }}°C,
+                        {{ search.description }}
+                        <span class="muted">({{ search.searched_at|date:"d M Y, H:i" }})</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">No searches yet. Search for a city above.</p>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>
